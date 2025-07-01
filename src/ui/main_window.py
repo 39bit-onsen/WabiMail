@@ -17,7 +17,7 @@ from datetime import datetime
 
 from src.mail.account import Account
 from src.mail.account_manager import AccountManager
-from src.mail.mail_message import MailMessage
+from src.mail.mail_message import MailMessage, MessageFlag
 from src.mail.mail_client_factory import MailClientFactory
 from src.config.app_config import AppConfig
 from src.ui.mail_list import MailList
@@ -721,10 +721,54 @@ WabiMailは、この精神をデジタルの世界に取り入れ、
             reply_all: 全員に返信かどうか
         """
         message = data if isinstance(data, MailMessage) else data[0] if data else None
-        if message:
-            self._update_status(f"「{message.subject}」に返信...")
-            logger.info(f"メール返信処理: {message.subject}")
-            # TODO: 返信画面の実装
+        if not message:
+            return
+            
+        if not self.current_account:
+            messagebox.showwarning(
+                "アカウント未選択",
+                "返信するには、まずアカウントを選択してください。",
+                parent=self.root
+            )
+            return
+        
+        reply_type = "全員に返信" if reply_all else "返信"
+        self._update_status(f"「{message.subject}」に{reply_type}...")
+        
+        try:
+            from src.ui.compose_window import show_compose_window
+            
+            def on_reply_sent(reply_message):
+                """返信送信完了時のコールバック"""
+                self._update_status(f"✅ 返信を送信しました: {reply_message.subject}")
+                # 元メッセージに返信済みフラグを追加
+                if not message.has_flag(MessageFlag.ANSWERED):
+                    message.add_flag(MessageFlag.ANSWERED)
+                    self.mail_list.refresh_message_display(message)
+                logger.info(f"返信送信完了: {reply_message.subject}")
+            
+            # 返信ウィンドウを表示
+            compose_window = show_compose_window(
+                parent=self.root,
+                account=self.current_account,
+                message_type="reply",
+                original_message=message,
+                on_sent=on_reply_sent
+            )
+            
+            if compose_window:
+                logger.info(f"返信画面を開きました: {message.subject}")
+            else:
+                self._update_status("返信画面の表示に失敗しました")
+                
+        except Exception as e:
+            logger.error(f"返信処理エラー: {e}")
+            self._update_status("返信画面でエラーが発生しました")
+            messagebox.showerror(
+                "エラー",
+                f"返信画面の表示でエラーが発生しました:\n{e}",
+                parent=self.root
+            )
     
     def _on_mail_forward(self, data):
         """
@@ -734,10 +778,49 @@ WabiMailは、この精神をデジタルの世界に取り入れ、
             data: 転送対象のメッセージまたはメッセージリスト
         """
         message = data if isinstance(data, MailMessage) else data[0] if data else None
-        if message:
-            self._update_status(f"「{message.subject}」を転送...")
-            logger.info(f"メール転送処理: {message.subject}")
-            # TODO: 転送画面の実装
+        if not message:
+            return
+            
+        if not self.current_account:
+            messagebox.showwarning(
+                "アカウント未選択",
+                "転送するには、まずアカウントを選択してください。",
+                parent=self.root
+            )
+            return
+        
+        self._update_status(f"「{message.subject}」を転送...")
+        
+        try:
+            from src.ui.compose_window import show_compose_window
+            
+            def on_forward_sent(forward_message):
+                """転送送信完了時のコールバック"""
+                self._update_status(f"✅ 転送を送信しました: {forward_message.subject}")
+                logger.info(f"転送送信完了: {forward_message.subject}")
+            
+            # 転送ウィンドウを表示
+            compose_window = show_compose_window(
+                parent=self.root,
+                account=self.current_account,
+                message_type="forward",
+                original_message=message,
+                on_sent=on_forward_sent
+            )
+            
+            if compose_window:
+                logger.info(f"転送画面を開きました: {message.subject}")
+            else:
+                self._update_status("転送画面の表示に失敗しました")
+                
+        except Exception as e:
+            logger.error(f"転送処理エラー: {e}")
+            self._update_status("転送画面でエラーが発生しました")
+            messagebox.showerror(
+                "エラー",
+                f"転送画面の表示でエラーが発生しました:\n{e}",
+                parent=self.root
+            )
     
     def _on_mail_delete(self, data):
         """
@@ -811,8 +894,46 @@ WabiMailは、この精神をデジタルの世界に取り入れ、
         """
         新規メール作成
         """
+        if not self.current_account:
+            messagebox.showwarning(
+                "アカウント未選択",
+                "メールを作成するには、まずアカウントを選択してください。",
+                parent=self.root
+            )
+            return
+        
         self._update_status("新規メール作成画面を開きます...")
-        # TODO: メール作成画面の実装
+        
+        try:
+            from src.ui.compose_window import show_compose_window
+            
+            def on_message_sent(message):
+                """メール送信完了時のコールバック"""
+                self._update_status(f"✅ メールを送信しました: {message.subject}")
+                # 送信済みフォルダに追加（将来実装）
+                logger.info(f"メール送信完了: {message.subject}")
+            
+            # メール作成ウィンドウを表示
+            compose_window = show_compose_window(
+                parent=self.root,
+                account=self.current_account,
+                message_type="new",
+                on_sent=on_message_sent
+            )
+            
+            if compose_window:
+                logger.info("新規メール作成画面を開きました")
+            else:
+                self._update_status("メール作成画面の表示に失敗しました")
+                
+        except Exception as e:
+            logger.error(f"新規メール作成エラー: {e}")
+            self._update_status("メール作成画面でエラーが発生しました")
+            messagebox.showerror(
+                "エラー",
+                f"メール作成画面の表示でエラーが発生しました:\n{e}",
+                parent=self.root
+            )
     
     def _add_account(self):
         """

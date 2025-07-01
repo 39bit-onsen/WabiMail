@@ -1,0 +1,54 @@
+{
+  "test_run": {
+    "start_time": "2025-07-01T23:13:16.994721",
+    "end_time": "2025-07-01T23:13:21.704967",
+    "duration_seconds": 4.709564,
+    "overall_result": "FAIL"
+  },
+  "test_results": {
+    "基本機能テスト": {
+      "status": "PASS",
+      "duration": 1.2729766368865967,
+      "timestamp": "2025-07-01T23:13:18.268273"
+    },
+    "データ永続化テスト": {
+      "status": "PASS",
+      "duration": 2.127699375152588,
+      "timestamp": "2025-07-01T23:13:20.396357"
+    },
+    "統合システムテスト": {
+      "status": "FAIL",
+      "duration": 0.45250725746154785,
+      "timestamp": "2025-07-01T23:13:20.849052"
+    },
+    "パフォーマンステスト": {
+      "status": "FAIL",
+      "duration": 0.28577446937561035,
+      "timestamp": "2025-07-01T23:13:21.135052"
+    },
+    "エラーハンドリングテスト": {
+      "status": "PASS",
+      "duration": 0.2471628189086914,
+      "timestamp": "2025-07-01T23:13:21.382465"
+    },
+    "並行処理テスト": {
+      "status": "FAIL",
+      "duration": 0.32106637954711914,
+      "timestamp": "2025-07-01T23:13:21.703721"
+    },
+    "リソース使用量テスト": {
+      "status": "PASS",
+      "duration": 0.0002770423889160156,
+      "timestamp": "2025-07-01T23:13:21.704215"
+    }
+  },
+  "test_logs": [
+    "基本機能テスト: 成功\n🌸 WabiMail データ永続化機能テスト\n==================================================\n🔒 SecureStorage 基本機能テスト\n----------------------------------------\n✅ 暗号化テスト\n✅ 復号テスト\n✅ アプリケーション設定テスト\n✅ ストレージ情報取得テスト\n✅ SecureStorage基本機能テスト完了\n\n📧 AccountStorage 機能テスト\n----------------------------------------\n✅ アカウント保存テスト\n✅ アカウント読み込みテスト\n✅ メールアドレス検索テスト\n✅ アカウントリスト取得テスト\n✅ OAuth2トークンテスト\n✅ アカウント更新テスト\n✅ アカウント削除テスト\n✅ AccountStorage機能テスト完了\n\n📬 MailStorage 機能テスト\n----------------------------------------\n✅ メッセージキャッシュテスト\n✅ メッセージ読み込みテスト\n✅ メッセージリスト取得テスト\n✅ メッセージ検索テスト\n✅ キャッシュ統計テスト\n✅ メッセージ削除テスト\n✅ MailStorage機能テスト完了\n\n🔗 統合テスト\n----------------------------------------\n✅ アカウント・メール連携テスト\n✅ ストレージ情報統合確認\n✅ 統合テスト完了\n\n📊 テスト結果サマリー\n==================================================\n✅ 成功: 4/4 テスト\n🎉 全てのテストが成功しました！\n\n🔒 データ永続化システムの基本実装が完了\n✨ 次のステップ: 実際のアプリケーションでの動作確認\n",
+    "データ永続化テスト: 成功\n",
+    "統合システムテスト: 失敗\nTraceback (most recent call last):\n  File \"/home/home/project/WabiMail/tests/test_integration.py\", line 33, in <module>\n    from src.mail.clients.imap_client import IMAPClient\nModuleNotFoundError: No module named 'src.mail.clients'\n",
+    "パフォーマンステスト: 失敗\nTraceback (most recent call last):\n  File \"/tmp/tmptgvyz0wy.py\", line 10, in <module>\n    from src.storage.secure_storage import SecureStorage\nModuleNotFoundError: No module named 'src'\n",
+    "エラーハンドリングテスト: 成功",
+    "並行処理テスト: 失敗 (成功率: 60.0%)",
+    "リソーステスト: スキップ (psutil未インストール)"
+  ]
+}

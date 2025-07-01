@@ -60,18 +60,19 @@ Gmailはもちろん、一般的なIMAP/SMTP/POPメールサーバにも対応�
 
 ---
 
-## ディレクトリ構成
+## ディレクトリ構成（例）
 
+```
 WabiMail/
-├─ src/ # メインアプリ
-├─ resources/ # アイコン等
-├─ installer/ # Inno Setupスクリプト
-├─ docs/ # 設計書・ブランドガイド
-├─ tests/ # テストコード
-├─ build/ # バイナリ生成物
+├─ src/             # メインアプリ
+├─ resources/       # アイコン等
+├─ installer/       # Inno Setupスクリプト
+├─ docs/            # 設計書・ブランドガイド
+├─ tests/           # テストコード
+├─ build/           # バイナリ生成物
 ├─ requirements.txt # 依存パッケージ
-├─ README.md # このファイル
-
+├─ README.md        # このファイル
+```
 
 ---
 

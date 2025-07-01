@@ -183,6 +183,13 @@ class WabiMailMainWindow:
         view_menu.add_command(label="フォルダを展開", command=self._expand_all_folders)
         view_menu.add_command(label="フォルダを折りたたみ", command=self._collapse_all_folders)
         
+        # 設定メニュー
+        settings_menu = tk.Menu(menubar, tearoff=0)
+        menubar.add_cascade(label="設定", menu=settings_menu)
+        settings_menu.add_command(label="🛠️ 設定画面", command=self._show_settings)
+        settings_menu.add_separator()
+        settings_menu.add_command(label="⚙️ アカウント設定", command=self._show_account_settings)
+        
         # ヘルプメニュー
         help_menu = tk.Menu(menubar, tearoff=0)
         menubar.add_cascade(label="ヘルプ", menu=help_menu)
@@ -1009,6 +1016,72 @@ WabiMailは、この精神をデジタルの世界に取り入れ、
         """
         if self.selected_message:
             self._on_mail_delete(self.selected_message)
+    
+    def _show_settings(self):
+        """
+        設定画面を表示
+        """
+        try:
+            from src.ui.settings_window import show_settings_window
+            
+            def on_settings_changed(changed_settings):
+                """設定変更時のコールバック"""
+                logger.info("設定が変更されました")
+                self._update_status("⚙️ 設定が更新されました")
+                
+                # UI関連の設定が変更された場合はスタイルを再適用
+                if any(key.startswith(('ui.', 'app.theme')) for key in changed_settings.keys()):
+                    self._setup_wabi_sabi_style()
+                    logger.info("UIスタイルを再適用しました")
+            
+            settings_window = show_settings_window(
+                parent=self.root,
+                config=self.config,
+                on_settings_changed=on_settings_changed
+            )
+            
+            if settings_window:
+                self._update_status("🛠️ 設定画面を開きました")
+                logger.info("設定画面を表示しました")
+            
+        except Exception as e:
+            logger.error(f"設定画面表示エラー: {e}")
+            messagebox.showerror("エラー", f"設定画面の表示でエラーが発生しました:\n{e}")
+    
+    def _show_account_settings(self):
+        """
+        アカウント設定画面を表示
+        """
+        try:
+            from src.ui.account_dialog import show_account_dialog
+            
+            if not self.current_account:
+                # 新規アカウント追加
+                self._add_account()
+                return
+            
+            # 既存アカウントの編集
+            def on_account_updated(updated_account):
+                """アカウント更新時のコールバック"""
+                logger.info(f"アカウントが更新されました: {updated_account.name}")
+                self._update_status(f"⚙️ アカウント設定を更新しました: {updated_account.name}")
+                
+                # アカウントリストを再読み込み
+                self._load_accounts()
+            
+            dialog = show_account_dialog(
+                parent=self.root,
+                account=self.current_account,
+                on_account_saved=on_account_updated
+            )
+            
+            if dialog:
+                self._update_status("⚙️ アカウント設定画面を開きました")
+                logger.info("アカウント設定画面を表示しました")
+            
+        except Exception as e:
+            logger.error(f"アカウント設定画面表示エラー: {e}")
+            messagebox.showerror("エラー", f"アカウント設定画面の表示でエラーが発生しました:\n{e}")
     
     def _show_about(self):
         """

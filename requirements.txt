@@ -1,0 +1,25 @@
+# WabiMail 依存関係
+# GUI フレームワーク - Tkinter（標準ライブラリのため不要）
+
+# Gmail OAuth2 認証
+google-auth-oauthlib>=1.0.0
+google-auth>=2.0.0
+
+# 暗号化・セキュリティ
+cryptography>=3.4.8
+
+# PyInstaller（実行ファイル生成用）
+pyinstaller>=5.0.0
+
+# 開発・テスト用
+pytest>=7.0.0
+pytest-cov>=4.0.0
+
+# 設定ファイル管理
+pyyaml>=6.0.0
+
+# ログ出力
+colorama>=0.4.6
+
+# その他ユーティリティ
+python-dateutil>=2.8.0

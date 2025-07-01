@@ -20,6 +20,8 @@ from src.mail.account_manager import AccountManager
 from src.mail.mail_message import MailMessage
 from src.mail.mail_client_factory import MailClientFactory
 from src.config.app_config import AppConfig
+from src.ui.mail_list import MailList
+from src.ui.mail_viewer import MailViewer
 from src.utils.logger import get_logger
 
 # ロガーを取得
@@ -60,8 +62,8 @@ class WabiMailMainWindow:
         
         # UI要素の参照
         self.account_tree = None
-        self.message_list = None
-        self.message_text = None
+        self.mail_list = None
+        self.mail_viewer = None
         self.status_label = None
         
         # ウィンドウの初期化
@@ -298,42 +300,12 @@ class WabiMailMainWindow:
         list_frame = ttk.Frame(self.content_paned, style="Wabi.TFrame")
         self.content_paned.add(list_frame, weight=2)
         
-        # タイトル
-        self.list_title_label = ttk.Label(list_frame, text="📥 メール一覧", 
-                                         style="Wabi.TLabel", font=("Yu Gothic UI", 10, "bold"))
-        self.list_title_label.pack(fill=tk.X, padx=8, pady=(8, 4))
-        
-        # メール一覧
-        list_content_frame = ttk.Frame(list_frame, style="Wabi.TFrame")
-        list_content_frame.pack(fill=tk.BOTH, expand=True, padx=8, pady=(0, 8))
-        
-        # スクロールバー付きTreeview
-        list_scroll = ttk.Scrollbar(list_content_frame)
-        list_scroll.pack(side=tk.RIGHT, fill=tk.Y)
-        
-        # メール一覧のカラム設定
-        columns = ("flags", "sender", "subject", "date")
-        self.message_list = ttk.Treeview(list_content_frame, style="Wabi.Treeview",
-                                        columns=columns, show="headings",
-                                        yscrollcommand=list_scroll.set)
-        self.message_list.pack(fill=tk.BOTH, expand=True)
-        list_scroll.config(command=self.message_list.yview)
-        
-        # カラムヘッダー設定
-        self.message_list.heading("flags", text="", anchor=tk.W)
-        self.message_list.heading("sender", text="送信者", anchor=tk.W)
-        self.message_list.heading("subject", text="件名", anchor=tk.W)
-        self.message_list.heading("date", text="日時", anchor=tk.W)
-        
-        # カラム幅設定
-        self.message_list.column("flags", width=40, minwidth=30)
-        self.message_list.column("sender", width=150, minwidth=100)
-        self.message_list.column("subject", width=300, minwidth=200)
-        self.message_list.column("date", width=120, minwidth=100)
-        
-        # イベントバインド
-        self.message_list.bind("<<TreeviewSelect>>", self._on_message_select)
-        self.message_list.bind("<Double-1>", self._on_message_double_click)
+        # 新しいMailListコンポーネントを使用
+        self.mail_list = MailList(list_frame,
+                                 on_selection_change=self._on_mail_selection_change,
+                                 on_double_click=self._on_mail_double_click,
+                                 on_context_menu=self._on_mail_context_menu)
+        self.mail_list.pack(fill=tk.BOTH, expand=True)
     
     def _create_message_view_pane(self):
         """
@@ -343,42 +315,12 @@ class WabiMailMainWindow:
         view_frame = ttk.Frame(self.content_paned, style="Wabi.TFrame")
         self.content_paned.add(view_frame, weight=2)
         
-        # タイトルとアクションボタン
-        view_header = ttk.Frame(view_frame, style="Wabi.TFrame")
-        view_header.pack(fill=tk.X, padx=8, pady=(8, 4))
-        
-        ttk.Label(view_header, text="📖 メール内容", 
-                 style="Wabi.TLabel", font=("Yu Gothic UI", 10, "bold")).pack(side=tk.LEFT)
-        
-        # アクションボタン
-        action_frame = ttk.Frame(view_header, style="Wabi.TFrame")
-        action_frame.pack(side=tk.RIGHT)
-        
-        ttk.Button(action_frame, text="↩️ 返信", 
-                  command=self._reply_message, 
-                  style="Wabi.TButton").pack(side=tk.LEFT, padx=(0, 4))
-        ttk.Button(action_frame, text="↪️ 転送", 
-                  command=self._forward_message, 
-                  style="Wabi.TButton").pack(side=tk.LEFT, padx=(0, 4))
-        ttk.Button(action_frame, text="🗑️ 削除", 
-                  command=self._delete_message, 
-                  style="Wabi.TButton").pack(side=tk.LEFT)
-        
-        # メール本文表示エリア
-        text_frame = ttk.Frame(view_frame, style="Wabi.TFrame")
-        text_frame.pack(fill=tk.BOTH, expand=True, padx=8, pady=(0, 8))
-        
-        # スクロールバー付きテキストウィジェット
-        text_scroll = ttk.Scrollbar(text_frame)
-        text_scroll.pack(side=tk.RIGHT, fill=tk.Y)
-        
-        self.message_text = tk.Text(text_frame, 
-                                   bg="#fefefe", fg="#333333",
-                                   font=("Yu Gothic UI", 10),
-                                   wrap=tk.WORD, state=tk.DISABLED,
-                                   yscrollcommand=text_scroll.set)
-        self.message_text.pack(fill=tk.BOTH, expand=True)
-        text_scroll.config(command=self.message_text.yview)
+        # 新しいMailViewerコンポーネントを使用
+        self.mail_viewer = MailViewer(view_frame,
+                                     on_reply=self._on_mail_reply,
+                                     on_forward=self._on_mail_forward,
+                                     on_delete=self._on_mail_delete)
+        self.mail_viewer.pack(fill=tk.BOTH, expand=True)
     
     def _create_status_bar(self, parent):
         """
@@ -617,48 +559,10 @@ WabiMailは、この精神をデジタルの世界に取り入れ、
         Args:
             messages: 表示するメッセージリスト
         """
-        # 既存のアイテムをクリア
-        for item in self.message_list.get_children():
-            self.message_list.delete(item)
-        
-        # メッセージを追加
+        # 新しいMailListコンポーネントを使用
         self.current_messages = messages
-        
-        for message in messages:
-            # フラグ表示
-            flags = ""
-            if message.is_read():
-                flags += "📖"
-            else:
-                flags += "📩"
-            if message.is_flagged():
-                flags += "⭐"
-            if message.has_attachments():
-                flags += "📎"
-            
-            # 送信者表示
-            sender = message.sender
-            if len(sender) > 20:
-                sender = sender[:17] + "..."
-            
-            # 件名表示
-            subject = message.subject
-            if len(subject) > 40:
-                subject = subject[:37] + "..."
-            
-            # 日時表示
-            date_str = message.get_display_date().strftime("%m/%d %H:%M")
-            
-            # アイテムを追加
-            item_id = self.message_list.insert("", "end", 
-                                              values=(flags, sender, subject, date_str))
-            
-            # メッセージオブジェクトを関連付け
-            self.message_list.set(item_id, "message_obj", message)
-        
-        # タイトルを更新
         folder_name = "受信トレイ"  # 現在は固定
-        self.list_title_label.config(text=f"📥 {folder_name} ({len(messages)}件)")
+        self.mail_list.set_messages(messages, folder_name)
     
     def _update_status(self, message: str):
         """
@@ -769,29 +673,96 @@ WabiMailは、この精神をデジタルの世界に取り入れ、
         # アカウントを再読み込み
         self._load_accounts()
     
-    def _on_message_select(self, event):
+    def _on_mail_selection_change(self, selected_messages: List[MailMessage]):
         """
-        メッセージ選択イベント
-        """
-        selection = self.message_list.selection()
-        if not selection:
-            return
+        メール選択変更イベント
         
-        item = selection[0]
-        # メッセージオブジェクトを取得
-        for message in self.current_messages:
-            if self.message_list.item(item, "values")[1] in message.sender:
-                self.selected_message = message
-                self._display_message(message)
-                break
+        Args:
+            selected_messages: 選択されたメッセージリスト
+        """
+        if selected_messages:
+            self.selected_message = selected_messages[0]
+            self.mail_viewer.display_message(self.selected_message)
+        else:
+            self.selected_message = None
+            self.mail_viewer.display_message(None)
     
-    def _on_message_double_click(self, event):
+    def _on_mail_double_click(self, message: MailMessage):
         """
-        メッセージダブルクリックイベント
+        メールダブルクリックイベント
+        
+        Args:
+            message: ダブルクリックされたメッセージ
         """
-        if self.selected_message:
-            # 別ウィンドウでメッセージを開く（将来実装）
-            pass
+        # 将来的に別ウィンドウでメール表示等の機能を実装
+        logger.info(f"メールをダブルクリック: {message.subject}")
+    
+    def _on_mail_context_menu(self, action: str, data):
+        """
+        メールコンテキストメニューイベント
+        
+        Args:
+            action: アクション名
+            data: アクションデータ（メッセージまたはメッセージリスト）
+        """
+        if action == "reply":
+            self._on_mail_reply(data, reply_all=False)
+        elif action == "forward":
+            self._on_mail_forward(data)
+        elif action == "delete":
+            self._on_mail_delete(data)
+    
+    def _on_mail_reply(self, data, reply_all=False):
+        """
+        メール返信処理
+        
+        Args:
+            data: 返信対象のメッセージまたはメッセージリスト
+            reply_all: 全員に返信かどうか
+        """
+        message = data if isinstance(data, MailMessage) else data[0] if data else None
+        if message:
+            self._update_status(f"「{message.subject}」に返信...")
+            logger.info(f"メール返信処理: {message.subject}")
+            # TODO: 返信画面の実装
+    
+    def _on_mail_forward(self, data):
+        """
+        メール転送処理
+        
+        Args:
+            data: 転送対象のメッセージまたはメッセージリスト
+        """
+        message = data if isinstance(data, MailMessage) else data[0] if data else None
+        if message:
+            self._update_status(f"「{message.subject}」を転送...")
+            logger.info(f"メール転送処理: {message.subject}")
+            # TODO: 転送画面の実装
+    
+    def _on_mail_delete(self, data):
+        """
+        メール削除処理
+        
+        Args:
+            data: 削除対象のメッセージまたはメッセージリスト
+        """
+        messages = data if isinstance(data, list) else [data] if data else []
+        if messages:
+            if len(messages) == 1:
+                result = messagebox.askyesno("確認", 
+                                           f"「{messages[0].subject}」を削除しますか？",
+                                           icon=messagebox.QUESTION)
+            else:
+                result = messagebox.askyesno("確認", 
+                                           f"{len(messages)}件のメッセージを削除しますか？",
+                                           icon=messagebox.QUESTION)
+            
+            if result:
+                for message in messages:
+                    logger.info(f"メール削除処理: {message.subject}")
+                    # TODO: 実際の削除処理
+                    pass
+                self._update_status(f"{len(messages)}件のメッセージを削除しました")
     
     def _on_search(self, event):
         """
@@ -806,73 +777,34 @@ WabiMailは、この精神をデジタルの世界に取り入れ、
     
     def _display_message(self, message: MailMessage):
         """
-        メッセージを表示します
+        メッセージを表示します（新しいMailViewerコンポーネントを使用）
         
         Args:
             message: 表示するメッセージ
         """
-        self.message_text.config(state=tk.NORMAL)
-        self.message_text.delete(1.0, tk.END)
-        
-        # ヘッダー情報
-        header_text = f"""差出人: {message.sender}
-宛先: {', '.join(message.recipients)}
-件名: {message.subject}
-日時: {message.get_display_date().strftime('%Y年%m月%d日 %H:%M:%S')}
-
-{'='*50}
-
-"""
-        
-        # 本文
-        body_text = message.body_text or "[本文なし]"
-        
-        # 添付ファイル情報
-        if message.has_attachments():
-            attachment_text = f"\n\n{'='*50}\n添付ファイル ({message.get_attachment_count()}件):\n"
-            for i, attachment in enumerate(message.attachments, 1):
-                attachment_text += f"{i}. {attachment.filename} ({attachment.size:,}バイト)\n"
-        else:
-            attachment_text = ""
-        
-        # 全体のテキストを設定
-        full_text = header_text + body_text + attachment_text
-        self.message_text.insert(1.0, full_text)
-        self.message_text.config(state=tk.DISABLED)
+        # 新しいMailViewerコンポーネントを使用してメッセージを表示
+        self.mail_viewer.display_message(message)
         
         # 未読メッセージの場合は既読にマーク
-        if not message.is_read():
+        if message and not message.is_read():
             message.mark_as_read()
-            # UI更新（実際の実装では保存も必要）
-            self._refresh_message_list_item(message)
+            # MailListの表示を更新
+            self.mail_list.refresh_message_display(message)
+            logger.info(f"メッセージを既読にマーク: {message.subject}")
     
     def _refresh_message_list_item(self, message: MailMessage):
         """
-        メッセージリストの特定アイテムを更新します
+        メッセージリストの特定アイテムを更新します（新しいMailListコンポーネント用）
         
         Args:
             message: 更新するメッセージ
         """
-        # 該当アイテムを検索してフラグを更新
-        for item_id in self.message_list.get_children():
-            item_values = self.message_list.item(item_id, "values")
-            if item_values[1] in message.sender:  # 送信者で判定（簡易）
-                # フラグを更新
-                flags = ""
-                if message.is_read():
-                    flags += "📖"
-                else:
-                    flags += "📩"
-                if message.is_flagged():
-                    flags += "⭐"
-                if message.has_attachments():
-                    flags += "📎"
-                
-                # アイテムを更新
-                values = list(item_values)
-                values[0] = flags
-                self.message_list.item(item_id, values=values)
-                break
+        # 新しいMailListコンポーネントのrefresh_message_displayメソッドを使用
+        if hasattr(self.mail_list, 'refresh_message_display'):
+            self.mail_list.refresh_message_display(message)
+        else:
+            # フォールバック: メッセージリスト全体を再更新
+            self.mail_list.set_messages(self.current_messages, "受信トレイ")
     
     # メニューアクション
     def _create_new_message(self):
@@ -941,28 +873,21 @@ WabiMailは、この精神をデジタルの世界に取り入れ、
         メッセージに返信
         """
         if self.selected_message:
-            self._update_status(f"「{self.selected_message.subject}」に返信...")
-            # TODO: 返信画面の実装
+            self._on_mail_reply(self.selected_message, reply_all=False)
     
     def _forward_message(self):
         """
         メッセージを転送
         """
         if self.selected_message:
-            self._update_status(f"「{self.selected_message.subject}」を転送...")
-            # TODO: 転送画面の実装
+            self._on_mail_forward(self.selected_message)
     
     def _delete_message(self):
         """
         メッセージを削除
         """
         if self.selected_message:
-            result = messagebox.askyesno("確認", 
-                                       f"「{self.selected_message.subject}」を削除しますか？",
-                                       icon=messagebox.QUESTION)
-            if result:
-                self._update_status("メッセージを削除しました")
-                # TODO: 実際の削除処理
+            self._on_mail_delete(self.selected_message)
     
     def _show_about(self):
         """

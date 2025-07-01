@@ -344,9 +344,6 @@ class TestAccountManager:
             account_type=AccountType.IMAP,
             is_active=False
         )
-        # IMAPアカウントにサーバー設定を追加
-        imap_account.settings.incoming_server = "imap.example.com"
-        imap_account.settings.outgoing_server = "smtp.example.com"
         
         self.manager.add_account(gmail_account)
         self.manager.add_account(imap_account)

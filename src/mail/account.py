@@ -247,11 +247,27 @@ class Account:
     def apply_preset_settings(self):
         """
         アカウントタイプに基づいてプリセット設定を適用します
+        
+        Gmail等の一般的なサービスの設定を自動的に適用し、
+        ユーザーの設定負担を軽減します。
         """
-        preset = self.get_preset_settings()
-        if preset.incoming_server:  # プリセット設定がある場合のみ適用
-            self.settings = preset
-            logger.debug(f"プリセット設定を適用しました: {self.account_type.value}")
+        if self.account_type == AccountType.GMAIL:
+            # Gmail設定
+            self.settings.incoming_server = "imap.gmail.com"
+            self.settings.incoming_port = 993
+            self.settings.incoming_security = "SSL"
+            self.settings.outgoing_server = "smtp.gmail.com"
+            self.settings.outgoing_port = 587
+            self.settings.outgoing_security = "STARTTLS"
+            self.auth_type = AuthType.OAUTH2
+            
+            logger.debug(f"Gmailプリセット設定を適用しました: {self.email_address}")
+        else:
+            # 他のタイプの場合は既存のロジックを使用
+            preset = self.get_preset_settings()
+            if preset.incoming_server:  # プリセット設定がある場合のみ適用
+                self.settings = preset
+                logger.debug(f"プリセット設定を適用しました: {self.account_type.value}")
     
     def to_dict(self) -> Dict[str, Any]:
         """
@@ -313,6 +329,69 @@ class Account:
             display_name=data.get("display_name", "")
         )
     
+    def requires_oauth2(self) -> bool:
+        """
+        OAuth2認証が必要かどうかを判定します
+        
+        Returns:
+            bool: OAuth2認証が必要な場合True
+        """
+        return self.auth_type == AuthType.OAUTH2 or self.account_type == AccountType.GMAIL
+    
+    def get_oauth2_scope_requirements(self) -> list[str]:
+        """
+        このアカウントで必要なOAuth2スコープを取得します
+        
+        Returns:
+            list[str]: 必要なスコープのリスト
+        """
+        if not self.requires_oauth2():
+            return []
+        
+        if self.account_type == AccountType.GMAIL:
+            # Gmail API必要スコープ
+            return [
+                'https://www.googleapis.com/auth/gmail.readonly',   # メール読み取り
+                'https://www.googleapis.com/auth/gmail.send',       # メール送信
+                'https://www.googleapis.com/auth/gmail.compose',    # メール作成
+                'https://www.googleapis.com/auth/gmail.modify'      # メール変更
+            ]
+        
+        return []
+    
+    def is_oauth2_authenticated(self) -> bool:
+        """
+        OAuth2認証が完了しているかチェックします
+        
+        Returns:
+            bool: OAuth2認証済みの場合True
+            
+        Note:
+            実際の認証状態は OAuth2Manager で管理されます。
+            このメソッドは設定上の判定のみを行います。
+        """
+        if not self.requires_oauth2():
+            return True  # OAuth2不要の場合は常にTrue
+        
+        # OAuth2Managerで実際の認証状態を確認する必要がある
+        # ここでは設定レベルでの判定のみ
+        return self.auth_type == AuthType.OAUTH2
+    
+    def get_authentication_display_name(self) -> str:
+        """
+        認証方式の表示名を取得します
+        
+        Returns:
+            str: 認証方式の日本語表示名
+        """
+        auth_names = {
+            AuthType.PASSWORD: "パスワード認証",
+            AuthType.OAUTH2: "OAuth2認証",
+            AuthType.APP_PASSWORD: "アプリパスワード", 
+            AuthType.NONE: "認証なし"
+        }
+        return auth_names.get(self.auth_type, "不明")
+    
     def __str__(self) -> str:
         """
         文字列表現を返します
@@ -322,4 +401,5 @@ class Account:
         """
         status = "有効" if self.is_active else "無効"
         default = " (デフォルト)" if self.is_default else ""
-        return f"{self.name} <{self.email_address}> [{self.account_type.value}] {status}{default}"
+        auth_display = self.get_authentication_display_name()
+        return f"{self.name} <{self.email_address}> [{self.account_type.value}] ({auth_display}) {status}{default}"

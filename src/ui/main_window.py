@@ -711,8 +711,63 @@ WabiMailは、この精神をデジタルの世界に取り入れ、
         """
         アカウントツリーダブルクリックイベント
         """
-        # 将来的にアカウント設定画面を開く
-        pass
+        selection = self.account_tree.selection()
+        if not selection:
+            return
+        
+        item = selection[0]
+        values = self.account_tree.item(item, "values")
+        
+        # アカウントノードの場合のみ編集ダイアログを開く
+        if len(values) >= 1 and len(values) < 2:  # フォルダではなくアカウント
+            account_id = values[0]
+            account = self.account_manager.get_account(account_id)
+            
+            if account:
+                self._edit_account(account)
+    
+    def _edit_account(self, account: Account):
+        """
+        アカウントを編集します
+        
+        Args:
+            account: 編集対象のアカウント
+        """
+        try:
+            from src.ui.account_dialog import show_account_dialog
+            
+            def on_account_updated(updated_account):
+                """アカウント更新成功時のコールバック"""
+                # ツリー表示を更新
+                self._refresh_account_tree()
+                
+                # 更新されたアカウントを選択
+                self._select_account(updated_account)
+                
+                self._update_status(f"アカウント「{updated_account.name}」を更新しました")
+                logger.info(f"アカウントを更新しました: {updated_account.email_address}")
+            
+            # アカウント設定ダイアログを表示（編集モード）
+            result = show_account_dialog(self.root, account=account, success_callback=on_account_updated)
+            
+            if not result:
+                self._update_status("アカウント編集がキャンセルされました")
+                
+        except Exception as e:
+            logger.error(f"アカウント編集エラー: {e}")
+            self._update_status("アカウント編集でエラーが発生しました")
+            messagebox.showerror("エラー", f"アカウント編集でエラーが発生しました: {e}")
+    
+    def _refresh_account_tree(self):
+        """
+        アカウントツリーを再構築します
+        """
+        # 既存のアイテムをクリア
+        for item in self.account_tree.get_children():
+            self.account_tree.delete(item)
+        
+        # アカウントを再読み込み
+        self._load_accounts()
     
     def _on_message_select(self, event):
         """
@@ -832,7 +887,31 @@ WabiMailは、この精神をデジタルの世界に取り入れ、
         アカウント追加
         """
         self._update_status("アカウント追加画面を開きます...")
-        # TODO: アカウント追加画面の実装
+        
+        try:
+            from src.ui.account_dialog import show_account_dialog
+            
+            def on_account_added(account):
+                """アカウント追加成功時のコールバック"""
+                # ツリーにアカウントを追加
+                self._add_account_to_tree(account)
+                
+                # 追加されたアカウントを選択
+                self._select_account(account)
+                
+                self._update_status(f"アカウント「{account.name}」を追加しました")
+                logger.info(f"アカウントを追加しました: {account.email_address}")
+            
+            # アカウント設定ダイアログを表示
+            result = show_account_dialog(self.root, success_callback=on_account_added)
+            
+            if not result:
+                self._update_status("アカウント追加がキャンセルされました")
+                
+        except Exception as e:
+            logger.error(f"アカウント追加エラー: {e}")
+            self._update_status("アカウント追加でエラーが発生しました")
+            messagebox.showerror("エラー", f"アカウント追加でエラーが発生しました: {e}")
     
     def _refresh_current_folder(self):
         """

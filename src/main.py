@@ -47,15 +47,17 @@ def main():
         logger.info("設定ファイルを読み込みました")
         
         # メインウィンドウを起動
-        # TODO: 実装予定 - GUIメインウィンドウの初期化
         logger.info("メインウィンドウを起動中...")
         
-        # 現在は基本構造のテスト用メッセージ
-        print("🌸 WabiMail - 侘び寂びメールクライアント")
-        print("📧 シンプルで静かなメール体験をお届けします")
-        print("✨ 現在開発中です...")
+        from src.ui.main_window import WabiMailMainWindow
         
-        logger.info("WabiMail が正常に起動しました")
+        # GUIアプリケーションを起動
+        app = WabiMailMainWindow()
+        
+        logger.info("WabiMail GUI が正常に起動しました")
+        
+        # メインループを開始
+        app.run()
         
     except Exception as e:
         # エラーが発生した場合の処理

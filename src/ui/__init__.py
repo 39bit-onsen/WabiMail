@@ -1,10 +1,16 @@
 # -*- coding: utf-8 -*-
 """
-UI（ユーザーインターフェース）モジュール
+UIモジュール初期化
 
-WabiMailのGUI関連機能を提供します。
-Tkinterベースのウィンドウ、ダイアログ、コンポーネント等を含みます。
+WabiMailのユーザーインターフェース関連のモジュールを初期化します。
+侘び寂びの美学に基づいた、静かで美しいGUIコンポーネントを提供します。
 
 Author: WabiMail Development Team
 Created: 2025-07-01
 """
+
+from src.ui.main_window import WabiMailMainWindow
+
+__all__ = [
+    "WabiMailMainWindow"
+]

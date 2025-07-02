@@ -1,4 +1,65 @@
-# WabiMail - 侘び寂びメールクライアント
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+WabiMail ライセンスファイル生成スクリプト
+
+Task 14: Inno Setupインストーラー用ライセンスファイル作成
+"""
+
+from pathlib import Path
+from datetime import datetime
+
+PROJECT_ROOT = Path(__file__).parent.parent
+
+def create_license_file():
+    """ライセンスファイル作成"""
+    
+    license_content = """WabiMail ソフトウェアライセンス契約書
+
+Copyright (C) 2025 WabiMail Development Team
+
+本ソフトウェア「WabiMail」（以下「本ソフトウェア」）の使用に関して、以下の条件に同意していただく必要があります。
+
+1. 使用許諾
+   本ソフトウェアは、個人および商用利用において無料でご利用いただけます。
+
+2. 配布
+   本ソフトウェアの再配布は、元のパッケージを変更せずに行う場合のみ許可されます。
+
+3. 改変
+   本ソフトウェアのソースコードの改変は許可されますが、改変版の配布には
+   原作者への適切な帰属表示が必要です。
+
+4. 免責事項
+   本ソフトウェアは「現状のまま」提供され、明示的または暗示的な保証は
+   一切ありません。作者は本ソフトウェアの使用によって生じたいかなる
+   損害に対しても責任を負いません。
+
+5. 侘び寂びの精神
+   本ソフトウェアは日本の美学である「侘び寂び」の精神に基づいて開発されました。
+   シンプルさ、不完全性の美、自然との調和を大切にしています。
+
+6. プライバシー
+   WabiMailは、ユーザーの個人情報やメールデータを外部に送信することはありません。
+   すべてのデータはお客様のコンピューター上でのみ処理されます。
+
+本ライセンスに同意いただけない場合は、本ソフトウェアをインストールまたは
+使用しないでください。
+
+WabiMail Development Team
+https://github.com/wabimail/wabimail
+"""
+    
+    license_file = PROJECT_ROOT / "LICENSE"
+    with open(license_file, 'w', encoding='utf-8') as f:
+        f.write(license_content)
+    
+    print(f"✅ ライセンスファイル作成: {license_file}")
+
+def create_readme_file():
+    """README.mdファイル作成"""
+    
+    readme_content = """# WabiMail - 侘び寂びメールクライアント
 
 🌸 侘び寂びの美学を体現したシンプルで美しいメールクライアント
 
@@ -87,5 +148,26 @@ WabiMailは、この精神を現代のソフトウェア開発に取り入れ、
 🌸 WabiMail - 美しいメール体験をあなたに
 
 Version: 1.0.0
-Build Date: 2025-07-02
+Build Date: """ + datetime.now().strftime("%Y-%m-%d") + """
 Copyright (C) 2025 WabiMail Development Team
+"""
+    
+    readme_file = PROJECT_ROOT / "README.md"
+    with open(readme_file, 'w', encoding='utf-8') as f:
+        f.write(readme_content)
+    
+    print(f"✅ READMEファイル作成: {readme_file}")
+
+def main():
+    """メイン関数"""
+    print("📄 WabiMail インストーラー用ドキュメント作成")
+    print("=" * 50)
+    
+    create_license_file()
+    create_readme_file()
+    
+    print("=" * 50)
+    print("✅ ドキュメント作成完了")
+
+if __name__ == "__main__":
+    main()

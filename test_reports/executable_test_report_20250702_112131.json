@@ -1,0 +1,43 @@
+{
+  "test_info": {
+    "start_time": "2025-07-02T11:21:31.698119",
+    "end_time": "2025-07-02T11:21:31.707612",
+    "platform": "Linux",
+    "python_version": "3.12.3 (main, Jun 18 2025, 17:59:45) [GCC 13.3.0]",
+    "executable_path": "/home/home/project/WabiMail/dist/wabimail"
+  },
+  "test_results": {
+    "executable_exists": {
+      "status": "FAIL",
+      "message": "実行ファイルが見つかりません: /home/home/project/WabiMail/dist/wabimail"
+    },
+    "basic_launch": {
+      "status": "ERROR",
+      "message": "エラー: [Errno 2] No such file or directory: '/home/home/project/WabiMail/dist/wabimail'"
+    },
+    "file_integrity": {
+      "status": "PASS",
+      "message": "ファイル整合性確認",
+      "details": {
+        "executable": "/home/home/project/WabiMail/dist/wabimail",
+        "is_executable": false
+      }
+    },
+    "dependencies": {
+      "status": "WARNING",
+      "message": "lddでエラーが発生しました"
+    },
+    "portable_execution": {
+      "status": "ERROR",
+      "message": "エラー: [Errno 2] No such file or directory: '/home/home/project/WabiMail/dist/wabimail'"
+    }
+  },
+  "summary": {
+    "total_tests": 5,
+    "passed": 1,
+    "failed": 1,
+    "warnings": 1,
+    "errors": 2,
+    "skipped": 0
+  }
+}

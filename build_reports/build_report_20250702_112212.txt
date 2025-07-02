@@ -1,0 +1,24 @@
+🌸 WabiMail ビルドレポート
+============================================================
+ビルド日時: 2025-07-02 11:22:12
+プラットフォーム: Linux
+Python バージョン: 3.12.3 (main, Jun 18 2025, 17:59:45) [GCC 13.3.0]
+============================================================
+
+ビルドログ:
+[11:22:12] INFO: 🔍 ビルド環境チェック開始
+[11:22:12] INFO: ✅ PyInstaller 6.14.1 が見つかりました
+[11:22:12] INFO: ✅ src/main.py 確認済み
+[11:22:12] INFO: ✅ config.yaml 確認済み
+[11:22:12] INFO: 🎨 アイコンファイル準備
+[11:22:12] INFO: 📄 Specファイル生成
+[11:22:12] INFO: ✅ Specファイル生成成功
+[11:22:12] INFO: 🔨 実行ファイルビルド開始
+[11:22:12] INFO: 実行コマンド: /home/home/project/WabiMail/venv/bin/python3 -m PyInstaller --clean --noconfirm /home/home/project/WabiMail/WabiMail.spec
+[11:23:23] INFO: ✅ ビルド成功
+[11:23:23] INFO: 🧪 実行ファイルテスト
+[11:23:23] INFO: ✅ 実行ファイルを確認: /home/home/project/WabiMail/dist/wabimail
+[11:23:23] INFO: 📊 ファイルサイズ: 29.13 MB
+[11:23:24] WARNING: ⚠️  起動テストは手動で実施してください
+[11:23:24] INFO: 📦 配布用パッケージ作成
+[11:23:26] INFO: ✅ パッケージ作成成功: WabiMail_Linux_20250702_112212.tar.gz (28.88 MB)

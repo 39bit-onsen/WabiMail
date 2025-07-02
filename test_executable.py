@@ -44,7 +44,7 @@ class ExecutableTestRunner:
         elif IS_MACOS:
             self.exe_path = DIST_DIR / "WabiMail.app" / "Contents" / "MacOS" / "WabiMail"
         else:
-            self.exe_path = DIST_DIR / "wabimail"
+            self.exe_path = DIST_DIR / "WabiMail"
     
     def log(self, message):
         """ログ出力"""

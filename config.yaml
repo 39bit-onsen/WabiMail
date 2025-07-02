@@ -1,0 +1,47 @@
+# WabiMail Configuration File
+# 侘び寂びの美学を体現したメールクライアント設定
+
+app:
+  name: "WabiMail"
+  version: "1.0.0"
+  description: "侘び寂びの美学を体現したメールクライアント"
+
+theme:
+  name: "侘び寂び"
+  primary_color: "#2F4F4F"  # DarkSlateGray
+  secondary_color: "#5F9EA0"  # CadetBlue
+  background_color: "#F5F5DC"  # Beige
+  text_color: "#2F2F2F"  # DarkGray
+  accent_color: "#8B7355"  # DarkKhaki
+
+ui:
+  main_window:
+    title: "WabiMail - 侘び寂びメールクライアント"
+    width: 1000
+    height: 700
+    min_width: 800
+    min_height: 600
+  
+  font:
+    family: "Noto Sans CJK JP"
+    size: 10
+    weight: "normal"
+
+security:
+  encryption:
+    algorithm: "AES-256"
+  
+  storage:
+    encrypt_local_data: true
+    secure_token_storage: true
+
+logging:
+  level: "INFO"
+  file: "logs/wabimail.log"
+  max_size_mb: 10
+  backup_count: 5
+
+performance:
+  cache_size_mb: 50
+  sync_interval_minutes: 5
+  max_concurrent_connections: 3
